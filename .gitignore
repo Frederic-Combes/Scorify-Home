@@ -1,2 +1,5 @@
-.ssh/*
-*_rsa*
+*_rsa
+*_rsa.pub
+*.svg
+.vagrant/*
+sound/*
