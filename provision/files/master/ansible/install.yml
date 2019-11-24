@@ -1,0 +1,18 @@
+---
+- hosts: docker
+  tasks:
+    - name: Turn off swap
+      shell: swapoff -a
+    - name: Install Docker-CE
+      import_role:
+        name: geerlingguy.docker
+      vars:
+        docker_edition: "ce"
+    - name: Ensure docker group exists
+      group:
+        name: docker
+        state: present
+    - name: Allow vagrant as a Docker user
+      user:
+        name: vagrant
+        groups: docker

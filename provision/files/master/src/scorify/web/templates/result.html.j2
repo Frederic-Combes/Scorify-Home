@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+	<title>Python Flask File Upload Example</title>
+	<link rel="stylesheet" href="/css/result.css">
+
+	<script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
+	<script src="/js/scripts.js" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8">
+			var socket = io();
+
+			var intervalID = null
+
+			socket.on("connect", function(){
+				socket.emit('request-update', "{{ hash }}")
+
+				var intervalID = setInterval(function() {
+					socket.emit('request-update', "{{ hash }}")
+				}, 250)
+			})
+
+			socket.on("disconnect", function(msg){
+				console.log("On disconnect: " + msg)
+
+				if(intervalID) {
+					clearInterval(intervalID)
+					intervalID = null
+				}
+			})
+
+			callMyFunction()
+		</script>
+</head>
+
+<body>
+	<h2 class="main-title">Please wait while we are processing the job #{{ hash }}...</h2>
+
+	<!-- Info about the Split Workers -->
+	<div class="progress-field">
+		<div class="header">Split</div>
+		<div class="progressbar" id="split">
+			<span class="percent" id="split-percent">Gathering informations...</span>
+			<div class=bar id="split-bar" style="width: 0%"></div>
+		</div>
+	</div>
+
+	<!-- Info about the FFT Workers -->
+	<div class="progress-field">
+		<div class="header">Fourier Transform</div>
+
+		<div id="fft-parent">
+
+			<div class="progressbar" id="fft-wait" order="-2">
+				<span class="percent">Gathering informations</span>
+				<div class="bar" style="width: 0%"></div>
+			</div>
+
+			<div class="progressbar" id="fft-complete" order="-1" style="display: none">
+				<span class="percent">All jobs are complete!</span>
+				<div class="bar" style="width: 100%"></div>
+			</div>
+
+			<div class="progressbar" id="fft-template" order="0" style="display: none">
+				<span class="percent">Gathering informations</span>
+				<div class="bar" style="width: 0%"></div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- Info about the Peak Workers -->
+	<div class="progress-field">
+		<div class="header">Peak detection</div>
+
+		<div id="peak-parent">
+
+			<div class="progressbar" id="peak-wait" order="-2">
+				<span class="percent">Gathering informations</span>
+				<div class="bar" style="width: 0%"></div>
+			</div>
+
+			<div class="progressbar" id="peak-complete" order="-1" style="display: none">
+				<span class="percent">All jobs are complete!</span>
+				<div class="bar" style="width: 100%"></div>
+			</div>
+
+			<div class="progressbar" id="peak-template" order="-1" style="display: none">
+				<span class="percent">Gathering informations</span>
+				<div class="bar" style="width: 0%"></div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- Info about the Score Workers -->
+	<div class="progress-field">
+		<div class="header">Score creation</div>
+
+		<div class="progressbar" id="split">
+			<span class="percent" id="split-percent">Gathering informations...</span>
+			<div class=bar id="split-bar" style="width: 0%"></div>
+		</div>
+	</div>
+
+</body>
+</html>
