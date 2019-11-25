@@ -6,6 +6,7 @@ RUN mkdir -p /usr/src/scorify/worker-peak  /usr/src/scorify/utils
 COPY worker-peak/Pipfile* /usr/src/scorify/worker-peak/
 
 WORKDIR /usr/src/scorify/worker-peak
+ENV PIP_NO_CACHE_DIR=false
 RUN pipenv install
 
 COPY ./*.py /usr/src/scorify/

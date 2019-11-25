@@ -13,10 +13,12 @@ build-worker-fft:
 	docker-compose -f docker-files/compose.yml build worker-fft
 
 run: run-redis
-	# sudo docker-compose -f docker-files/compose.yml up
 
 run-redis:
-	sudo docker-compose -d -f docker-files/compose.yml up redis
+	docker-compose -f docker-files/compose.yml up -d redis
+
+run-all:
+	docker-compose -f docker-files/compose.yml up -d
 
 run-web:
-	sudo docker-compose -f docker-files/compose.yml up scorify-web
+	docker-compose -f docker-files/compose.yml up -d web

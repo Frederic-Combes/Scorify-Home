@@ -4,26 +4,27 @@
 <head>
 	<title>Scorify Home Page</title>
 	<link rel="stylesheet" href="/css/upload.css">
-
-
 </head>
 
 <body>
 
-<h2>Select a .wav file to Score</h2>
+<div class="title">
+	Select a .wav file to Score
+</div>
 
-<form method="post" action="/" enctype="multipart/form-data">
-  <dl><p>
-		<input type="file" name="file" autocomplete="off" required>
-	</p></dl>
-  <p>
-		<input type="submit" value="Submit">
-	</p>
-</form>
+<div class="upload-form">
+	<form class="upload-form" method="post" action="/" enctype="multipart/form-data">
+		<input type="button" class="button select" value="Choose" onclick="document.getElementById('button-file').click();" />
+		<input type="file" id="button-file" name="file" style="display:none;" />
+		<input type="button" class="button go" value="Go!" onclick="document.getElementById('button-go').click();" />
+		<input type="submit" value="go" id="button-go" style="display:none;" />
+	</form>
+</div>
 
 <section id="tail">
 	<script src="/js/upload.js" charset="utf-8"></script>
 </section>
+
 </body>
 
 </html>

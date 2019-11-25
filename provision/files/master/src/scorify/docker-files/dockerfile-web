@@ -6,6 +6,7 @@ RUN mkdir -p /usr/src/scorify/web  /usr/src/scorify/utils
 COPY web/Pipfile* /usr/src/scorify/web/
 
 WORKDIR /usr/src/scorify/web
+ENV PIP_NO_CACHE_DIR=false
 RUN pipenv install
 
 COPY ./*.py /usr/src/scorify

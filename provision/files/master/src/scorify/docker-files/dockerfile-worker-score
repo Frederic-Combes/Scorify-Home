@@ -6,6 +6,7 @@ RUN mkdir -p /usr/src/scorify/worker-score  /usr/src/scorify/utils
 COPY worker-score/Pipfile* /usr/src/scorify/worker-score/
 
 WORKDIR /usr/src/scorify/worker-score
+ENV PIP_NO_CACHE_DIR=false
 RUN pipenv install
 
 COPY ./*.py /usr/src/scorify/

@@ -58,7 +58,7 @@ def FFT(rawFileHash, segmentHash):
 
         # TODO: We could ignore the later half of the data (negative frequencies) as it's symmetric for FFT of real signals
         file.write(fftPowerData.tobytes())
-        print(file.tell(), np.amax(fftPowerData))
+        # print(file.tell(), np.amax(fftPowerData))
 
         # Debug purpose only
         allData = np.append(allData, fftPowerData)
