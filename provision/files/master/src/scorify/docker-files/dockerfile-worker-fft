@@ -1,0 +1,16 @@
+FROM python:3.7-slim
+
+RUN pip install pipenv
+RUN mkdir -p /usr/src/scorify/worker-fft  /usr/src/scorify/utils
+
+COPY worker-fft/Pipfile* /usr/src/scorify/worker-fft/
+
+WORKDIR /usr/src/scorify/worker-fft
+RUN pipenv install
+
+COPY ./*.py /usr/src/scorify/
+COPY ./worker-fft /usr/src/scorify/worker-fft/
+COPY ./utils /usr/src/scorify/utils/
+
+WORKDIR /usr/src/scorify/worker-fft
+CMD ["pipenv", "run", "python", "main.py"]

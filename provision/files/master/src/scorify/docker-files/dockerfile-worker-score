@@ -1,0 +1,16 @@
+FROM python:3.7-slim
+
+RUN pip install pipenv
+RUN mkdir -p /usr/src/scorify/worker-score  /usr/src/scorify/utils
+
+COPY worker-score/Pipfile* /usr/src/scorify/worker-score/
+
+WORKDIR /usr/src/scorify/worker-score
+RUN pipenv install
+
+COPY ./*.py /usr/src/scorify/
+COPY ./worker-score /usr/src/scorify/worker-score/
+COPY ./utils /usr/src/scorify/utils/
+
+WORKDIR /usr/src/scorify/worker-score
+CMD ["pipenv", "run", "python", "main.py"]

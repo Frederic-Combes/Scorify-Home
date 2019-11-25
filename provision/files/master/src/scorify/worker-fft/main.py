@@ -13,37 +13,41 @@ import matplotlib.pyplot as plt
 
 from utils import redis, db, filepath
 
+def MaybeNotify(index, total, hash, segmentHash):
+    if randint(0, 10) == 0:
+        print('[fft] Processing index', index)
+        redis.open().publish('JOB-UPDATE-FFT', hash + '-' + segmentHash + '-UPDATE-' + str(index) + '-' + str(total))
+
 def FFT(rawFileHash, segmentHash):
 
-    # Read and convert to complex
+    # WAV: The number of channel is contained in the shape of data (len, numChannels)
     sampleFrequency, rdata  = read(filepath.GetSegmentFromHash(rawFileHash, segmentHash))
-    data                    = rdata.astype(np.complex_)
+    # Convert to complex for the FFT
+    data = rdata.astype(np.complex_)
 
     fftSampleFrenquency         = 80
-    # fftSampleLength             = 1 * sampleFrequency
     fftSampleLength             = math.ceil(0.25 * sampleFrequency)
     hamming                     = np.reshape(np.repeat(np.hamming(fftSampleLength), data.shape[1]), (fftSampleLength, 2))
-
-    # WAV: The number of channel is contained in the shape of data (len, numChannels)
+    # Number of FFT to compute
+    total                       = math.floor((len(data) - fftSampleLength) * fftSampleFrenquency / sampleFrequency)
 
     # We don't have the file hash yet
+    filepath.EnsureExists('/data/temp/file')
     file = NamedTemporaryFile(mode='w+b', dir='/data/temp', delete=False)
     # File header, [number of FFT Samples, FFT sample length, original file sample frequency, FFT sample frequency]
     file.write(np.zeros(4, dtype=np.int32).tobytes())
 
-    total = math.floor((len(data) - fftSampleLength) * fftSampleFrenquency / sampleFrequency)
-
+    # Notify Redis we started the job
     print('[fft] Data shape:', data.shape)
     redis.open().publish('JOB-UPDATE-FFT', rawFileHash + '-' + segmentHash + '-STARTED-' + str(total))
 
+    # Debug purpose only
     allData = np.array([], dtype=np.float_)
 
     index, nextNotification = 0, 0
     while math.ceil(index * sampleFrequency / fftSampleFrenquency) + fftSampleLength <= len(data):
-        if index >= nextNotification:
-            print('[fft] Processing index', index)
-            nextNotification = nextNotification + randint(18, 28)
-            redis.open().publish('JOB-UPDATE-FFT', rawFileHash + '-' + segmentHash + '-UPDATE-' + str(index) + '-' + str(total))
+        # Send a progress notification on Redis
+        MaybeNotify(index, total, rawFileHash, segmentHash)
 
         s = math.ceil(index * sampleFrequency / fftSampleFrenquency)
         e = math.ceil(index * sampleFrequency / fftSampleFrenquency) + fftSampleLength
@@ -56,24 +60,23 @@ def FFT(rawFileHash, segmentHash):
         file.write(fftPowerData.tobytes())
         print(file.tell(), np.amax(fftPowerData))
 
+        # Debug purpose only
         allData = np.append(allData, fftPowerData)
 
         index = index + 1
 
-    # Should not be here
+    # Debug purpose only
     plt.imshow(np.reshape(allData, (fftSampleLength, -1)), aspect='auto')
     filepath.EnsureExists(filepath.GetFFTFromHash(rawFileHash, segmentHash) + '.svg')
     plt.savefig(filepath.GetFFTFromHash(rawFileHash, segmentHash) + '.svg')
-    # END
 
     file.seek(0)
     file.write(np.array([index, fftSampleLength, sampleFrequency, fftSampleFrenquency], dtype=np.int32).tobytes())
-
     file.close()
 
     print('[fft] Processing complete')
     redis.open().publish('JOB-UPDATE-FFT', rawFileHash + '-' + segmentHash + '-UPDATE-' + str(total) + '-' + str(total))
-    print('[fft] Finalizing job')
+    print('[fft] Finalizing job ...')
 
     # Rename the temporary file
     fftHash  = filepath.Hash(file.name)

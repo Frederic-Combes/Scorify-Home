@@ -340,4 +340,5 @@ if __name__ == "__main__":
 
     # InitDB()
     SIO.run(APP, host='0.0.0.0', port=5000)
+    print('[web] Awaiting requests...')
     # CloseDB()

@@ -1,0 +1,16 @@
+FROM python:3.7-slim
+
+RUN pip install pipenv
+RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
+
+COPY worker-split/Pipfile* /usr/src/scorify/worker-split/
+
+WORKDIR /usr/src/scorify/worker-split
+RUN pipenv install
+
+COPY ./*.py /usr/src/scorify/
+COPY ./worker-split /usr/src/scorify/worker-split/
+COPY ./utils /usr/src/scorify/utils/
+
+WORKDIR /usr/src/scorify/worker-split
+CMD ["pipenv", "run", "python", "main.py"]

@@ -14,6 +14,7 @@ cp $SYNC_FOLDER/.ssh/$KEY_NAME\_rsa $VAGRANT_HOME/.ssh/$KEY_NAME\_rsa || :
 cp $SYNC_FOLDER/.ssh/$KEY_NAME\_rsa.pub $VAGRANT_HOME/.ssh/$KEY_NAME\_rsa.pub || :
 
 # Setup SSH config file
+touch $VAGRANT_HOME/.ssh/config
 sed -i -e "/## BEGIN $KEY_NAME KEY/,/## END $KEY_NAME KEY/d" $VAGRANT_HOME/.ssh/config
 
 echo "## BEGIN $KEY_NAME KEY" >> $VAGRANT_HOME/.ssh/config

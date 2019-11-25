@@ -8,11 +8,5 @@
         name: geerlingguy.docker
       vars:
         docker_edition: "ce"
-    - name: Ensure docker group exists
-      group:
-        name: docker
-        state: present
-    - name: Allow vagrant as a Docker user
-      user:
-        name: vagrant
-        groups: docker
+        docker_users:
+          - vagrant

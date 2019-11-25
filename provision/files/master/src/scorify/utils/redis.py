@@ -13,7 +13,8 @@ def open():
 
             # redisConfig['host'] = os.environ['REDIS_HOST']
             # redisConfig['port'] = os.environ['REDIS_PORT']
-            redisConfig['host'] = "127.0.0.1"
+            # redisConfig['host'] = "127.0.0.1"
+            redisConfig['host'] = "redis"
             redisConfig['port'] = 6379
             redisConfig['db'] = 0
 
