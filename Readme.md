@@ -8,4 +8,6 @@ provision/files/master/.ssh/ansible_rsa
 provision/files/master/.ssh/ansible_rsa.pub
 ```
 
-with `ssh-keygen`
+with `ssh-keygen`.
+
+Start the infrastructure with
