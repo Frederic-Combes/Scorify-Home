@@ -17,19 +17,21 @@
 # CMD ["pipenv", "run", "python", "main.py"]
 
 # Attempting a smaller image ###################################################
-FROM python:3.7-alpine
+FROM python:3.7-slim
 
 RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
-
 WORKDIR /usr/src/scorify/worker-split
 
 COPY worker-split/Pipfile* ./
 
-RUN pip install --no-cache-dir pipenv
-RUN pipenv install --deploy --clear
+RUN pip install pipenv && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
+  pipenv install --deploy --system && \
+  apt-get remove -y gcc python3-dev libssl-dev && \
+  apt-get autoremove -y && \
+  pip uninstall pipenv -y
 
-COPY ./*.py /usr/src/scorify/
-COPY ./worker-split /usr/src/scorify/worker-split/
-COPY ./utils /usr/src/scorify/utils/
-
-CMD ["python3", "main.py"]
+COPY ./*.py ../
+COPY ./worker-split ./
+COPY ./utils ../utils/
