@@ -1,11 +1,11 @@
 all:
 
 build:
-	docker build -t scorify-web:latest -f docker-file/dockerfile-web .
-	docker build -tscorify-worker-split:latest -f docker-file/dockerfile-worker-split .
-	docker build -tscorify-worker-fft:latest -f docker-file/dockerfile-workder-fft .
-	docker build -tscorify-worker-peak:latest -f docker-file/dockerfile-worker-peak .
-	docker build -tscorify-worker-score:latest -f docker-file/dockerfile-worker-score .
+	docker build -t scorify-web:latest -f docker-files/dockerfile-web .
+	docker build -tscorify-worker-split:latest -f docker-files/dockerfile-worker-split .
+	docker build -tscorify-worker-fft:latest -f docker-files/dockerfile-workder-fft .
+	docker build -tscorify-worker-peak:latest -f docker-files/dockerfile-worker-peak .
+	docker build -tscorify-worker-score:latest -f docker-files/dockerfile-worker-score .
 
 	docker-compose -f docker-files/compose.yml build
 
