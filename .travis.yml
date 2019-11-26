@@ -1,6 +1,7 @@
 language: python
 
-services: docker
+services:
+  - docker
 
 before_script:
   - cd provision/files/master/src/scorify
