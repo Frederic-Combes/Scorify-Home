@@ -6,6 +6,7 @@ before_script:
   - cd provision/files/master/src/scorify && make pull
 
 script:
+  - ls -al
   - cd provision/files/master/src/scorify && make build
 
 after_success:
