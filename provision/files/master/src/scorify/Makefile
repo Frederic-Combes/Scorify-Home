@@ -15,6 +15,11 @@ push:
 	docker tag scorify-worker-fft:latest fredericcombes/scorify-worker-fft:latest
 	docker tag scorify-worker-peak:latest fredericcombes/scorify-worker-peak:latest
 	docker tag scorify-worker-score:latest fredericcombes/scorify-worker-score:latest
+	docker push fredericcombes/scorify-web:latest
+	docker push fredericcombes/scorify-worker-score:latest
+	docker push fredericcombes/scorify-worker-fft:latest
+	docker push fredericcombes/scorify-worker-peak:latest
+	docker push fredericcombes/scorify-worker-score:latest 
 
 
 pull:
