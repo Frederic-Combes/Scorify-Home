@@ -1,17 +1,36 @@
+# FROM python:3.7-slim
+
+# RUN pip install pipenv
+# RUN mkdir -p /usr/src/scorify/worker-score  /usr/src/scorify/utils
+
+# COPY worker-score/Pipfile* /usr/src/scorify/worker-score/
+
+# WORKDIR /usr/src/scorify/worker-score
+# ENV PIP_NO_CACHE_DIR=false
+# RUN pipenv install
+
+# COPY ./*.py /usr/src/scorify/
+# COPY ./worker-score /usr/src/scorify/worker-score/
+# COPY ./utils /usr/src/scorify/utils/
+
+# WORKDIR /usr/src/scorify/worker-score
+# CMD ["pipenv", "run", "python", "main.py"]
+
 FROM python:3.7-slim
 
-RUN pip install pipenv
 RUN mkdir -p /usr/src/scorify/worker-score  /usr/src/scorify/utils
-
-COPY worker-score/Pipfile* /usr/src/scorify/worker-score/
-
 WORKDIR /usr/src/scorify/worker-score
-ENV PIP_NO_CACHE_DIR=false
-RUN pipenv install
 
-COPY ./*.py /usr/src/scorify/
-COPY ./worker-score /usr/src/scorify/worker-score/
-COPY ./utils /usr/src/scorify/utils/
+COPY worker-score/Pipfile* ./
 
-WORKDIR /usr/src/scorify/worker-score
-CMD ["pipenv", "run", "python", "main.py"]
+RUN pip install pipenv && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
+  pipenv install --deploy --system && \
+  apt-get remove -y gcc python3-dev libssl-dev && \
+  apt-get autoremove -y && \
+  pip uninstall pipenv -y
+
+COPY ./*.py ../
+COPY ./worker-score ./
+COPY ./utils ../utils/

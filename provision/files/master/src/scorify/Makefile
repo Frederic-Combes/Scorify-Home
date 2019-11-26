@@ -1,3 +1,5 @@
+DOCKER_REPO=fredericcombes
+
 all:
 
 build:
@@ -7,27 +9,25 @@ build:
 	docker build -t scorify-worker-peak:latest -f docker-files/dockerfile-worker-peak .
 	docker build -t scorify-worker-score:latest -f docker-files/dockerfile-worker-score .
 
-#	docker-compose -f docker-files/compose.yml build
-
 push:
-	docker tag scorify-web:latest fredericcombes/scorify-web:latest
-	docker tag scorify-worker-split:latest fredericcombes/scorify-worker-score:latest
-	docker tag scorify-worker-fft:latest fredericcombes/scorify-worker-fft:latest
-	docker tag scorify-worker-peak:latest fredericcombes/scorify-worker-peak:latest
-	docker tag scorify-worker-score:latest fredericcombes/scorify-worker-score:latest
-	docker push fredericcombes/scorify-web:latest
-	docker push fredericcombes/scorify-worker-score:latest
-	docker push fredericcombes/scorify-worker-fft:latest
-	docker push fredericcombes/scorify-worker-peak:latest
-	docker push fredericcombes/scorify-worker-score:latest 
+	docker tag scorify-web:latest $DOCKER_REPO/scorify-web:latest
+	docker tag scorify-worker-split:latest $DOCKER_REPO/scorify-worker-score:latest
+	docker tag scorify-worker-fft:latest $DOCKER_REPO/scorify-worker-fft:latest
+	docker tag scorify-worker-peak:latest $DOCKER_REPO/scorify-worker-peak:latest
+	docker tag scorify-worker-score:latest $DOCKER_REPO/scorify-worker-score:latest
+	docker push $DOCKER_REPO/scorify-web:latest
+	docker push $DOCKER_REPO/scorify-worker-peak:latest
+	docker push $DOCKER_REPO/scorify-worker-fft:latest
+	docker push $DOCKER_REPO/scorify-worker-peak:latest
+	docker push $DOCKER_REPO/scorify-worker-score:latest
 
 
 pull:
-	docker pull fredericcombes/scorify-web:latest			|| :
-	docker pull fredericcombes/scorify-worker-score:latest 	|| :
-	docker pull fredericcombes/scorify-worker-fft:latest 	|| :
-	docker pull fredericcombes/scorify-worker-peak:latest 	|| :
-	docker pull fredericcombes/scorify-worker-score:latest 	|| :
+	docker pull $DOCKER_REPO/scorify-web:latest			|| :
+	docker pull $DOCKER_REPO/scorify-worker-score:latest 	|| :
+	docker pull $DOCKER_REPO/scorify-worker-fft:latest 	|| :
+	docker pull $DOCKER_REPO/scorify-worker-peak:latest 	|| :
+	docker pull $DOCKER_REPO/scorify-worker-score:latest 	|| :
 
 build-web:
 	docker-compose -f docker-files/compose.yml build web
