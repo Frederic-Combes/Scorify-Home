@@ -26,7 +26,7 @@ COPY worker-score/Pipfile* ./
 RUN pip install pipenv && \
   apt-get update && \
   apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
-  pipenv install --deploy --system && \
+  pipenv install --skip-lock && \
   apt-get remove -y gcc python3-dev libssl-dev && \
   apt-get autoremove -y && \
   pip uninstall pipenv -y
