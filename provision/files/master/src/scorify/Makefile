@@ -3,7 +3,7 @@ all:
 build:
 	docker build -t scorify-web:latest -f docker-files/dockerfile-web .
 	docker build -tscorify-worker-split:latest -f docker-files/dockerfile-worker-split .
-	docker build -tscorify-worker-fft:latest -f docker-files/dockerfile-workder-fft .
+	docker build -tscorify-worker-fft:latest -f docker-files/dockerfile-worker-fft .
 	docker build -tscorify-worker-peak:latest -f docker-files/dockerfile-worker-peak .
 	docker build -tscorify-worker-score:latest -f docker-files/dockerfile-worker-score .
 
