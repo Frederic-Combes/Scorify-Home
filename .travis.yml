@@ -3,7 +3,7 @@ language: python
 services: docker
 
 script:
-  - cd /provision/files/master/src/scorify && make build
+  - cd provision/files/master/src/scorify && make build
 
 after_success:
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
