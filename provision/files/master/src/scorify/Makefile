@@ -16,6 +16,14 @@ push:
 	docker tag scorify-worker-pip:latest fredericcombes/scorify-worker-peak:latest
 	docker tag scorify-worker-score:latest fredericcombes/scorify-worker-score:latest
 
+
+pull:
+	docker pull fredericcombes/scorify-web:latest
+	docker pull fredericcombes/scorify-worker-score:latest
+	docker pull fredericcombes/scorify-worker-fft:latest
+	docker pull fredericcombes/scorify-worker-peak:latest
+	docker pull fredericcombes/scorify-worker-score:latest
+
 build-web:
 	docker-compose -f docker-files/compose.yml build web
 
