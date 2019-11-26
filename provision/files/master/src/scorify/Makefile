@@ -13,7 +13,7 @@ push:
 	docker tag scorify-web:latest fredericcombes/scorify-web:latest
 	docker tag scorify-worker-split:latest fredericcombes/scorify-worker-score:latest
 	docker tag scorify-worker-fft:latest fredericcombes/scorify-worker-fft:latest
-	docker tag scorify-worker-pip:latest fredericcombes/scorify-worker-peak:latest
+	docker tag scorify-worker-peak:latest fredericcombes/scorify-worker-peak:latest
 	docker tag scorify-worker-score:latest fredericcombes/scorify-worker-score:latest
 
 
