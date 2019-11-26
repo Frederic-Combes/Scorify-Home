@@ -11,5 +11,5 @@ script:
 after_success:
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       docker login -u $DOCKER_USER -p $DOCKER_PWD ;
-      cd /provision/files/master/src/scorify && make push
+      cd /provision/files/master/src/scorify && make push ;
     fi
