@@ -3,14 +3,16 @@ language: python
 services: docker
 
 before_script:
-  - cd provision/files/master/src/scorify && make pull
+  - cd provision/files/master/src/scorify*
+  - make pull
 
 script:
   - ls -al
-  - cd provision/files/master/src/scorify && make build
+  - make build
 
 after_success:
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       docker login -u $DOCKER_USER -p $DOCKER_PWD ;
-      cd /provision/files/master/src/scorify && make push ;
+      make push ;
     fi
+-
