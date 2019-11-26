@@ -1,4 +1,4 @@
-# FROM python:3.7-slim
+# FROM python:3.6-slim
 
 # RUN pip install pipenv
 # RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
@@ -17,7 +17,7 @@
 # CMD ["pipenv", "run", "python", "main.py"]
 
 # Attempting a smaller image ###################################################
-FROM python:3.7-slim
+FROM python:3.6-slim
 
 RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
 WORKDIR /usr/src/scorify/worker-split
