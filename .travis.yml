@@ -1,0 +1,6 @@
+language: python
+
+services: docker
+
+script:
+  - cd /provision/files/master/src/scorify && make build
