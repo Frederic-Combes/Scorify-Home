@@ -7,7 +7,7 @@ build:
 	docker build -tscorify-worker-peak:latest -f docker-files/dockerfile-worker-peak .
 	docker build -tscorify-worker-score:latest -f docker-files/dockerfile-worker-score .
 
-	docker-compose -f docker-files/compose.yml build
+#	docker-compose -f docker-files/compose.yml build
 
 push:
 	docker tag scorify-web:latest fredericcombes/scorify-web:latest
