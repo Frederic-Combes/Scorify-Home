@@ -2,12 +2,7 @@ DOCKER_REPO=fredericcombes
 
 all:
 
-build:
-	docker build -t scorify-web:latest -f docker-files/dockerfile-web .
-	docker build -t scorify-worker-split:latest -f docker-files/dockerfile-worker-split .
-	docker build -t scorify-worker-fft:latest -f docker-files/dockerfile-worker-fft .
-	docker build -t scorify-worker-peak:latest -f docker-files/dockerfile-worker-peak .
-	docker build -t scorify-worker-score:latest -f docker-files/dockerfile-worker-score .
+build: build-web build-worker-split build-worker-fft build-worker-peak build-worker-score
 
 push:
 	docker tag scorify-web:latest $DOCKER_REPO/scorify-web:latest
@@ -37,6 +32,12 @@ build-worker-split:
 
 build-worker-fft:
 	docker-compose -f docker-files/compose.yml build worker-fft
+
+build-worker-peak:
+	docker-compose -f docker-files/compose.yml build worker-peak
+
+build-worker-score:
+	docker-compose -f docker-files/compose.yml build worker-score
 
 run: run-redis
 
