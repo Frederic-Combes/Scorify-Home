@@ -5,24 +5,24 @@ all:
 build: build-web build-worker-split build-worker-fft build-worker-peak build-worker-score
 
 push:
-	docker tag scorify-web:latest $DOCKER_REPO/scorify-web:latest
-	docker tag scorify-worker-split:latest $DOCKER_REPO/scorify-worker-score:latest
-	docker tag scorify-worker-fft:latest $DOCKER_REPO/scorify-worker-fft:latest
-	docker tag scorify-worker-peak:latest $DOCKER_REPO/scorify-worker-peak:latest
-	docker tag scorify-worker-score:latest $DOCKER_REPO/scorify-worker-score:latest
-	docker push $DOCKER_REPO/scorify-web:latest
-	docker push $DOCKER_REPO/scorify-worker-peak:latest
-	docker push $DOCKER_REPO/scorify-worker-fft:latest
-	docker push $DOCKER_REPO/scorify-worker-peak:latest
-	docker push $DOCKER_REPO/scorify-worker-score:latest
+	docker tag scorify-web:latest $(DOCKER_REPO)/scorify-web:latest
+	docker tag scorify-worker-split:latest $(DOCKER_REPO)/scorify-worker-score:latest
+	docker tag scorify-worker-fft:latest $(DOCKER_REPO)/scorify-worker-fft:latest
+	docker tag scorify-worker-peak:latest $(DOCKER_REPO)/scorify-worker-peak:latest
+	docker tag scorify-worker-score:latest $(DOCKER_REPO)/scorify-worker-score:latest
+	docker push $(DOCKER_REPO)/scorify-web:latest
+	docker push $(DOCKER_REPO)/scorify-worker-peak:latest
+	docker push $(DOCKER_REPO)/scorify-worker-fft:latest
+	docker push $(DOCKER_REPO)/scorify-worker-peak:latest
+	docker push $(DOCKER_REPO)/scorify-worker-score:latest
 
 
 pull:
-	docker pull $DOCKER_REPO/scorify-web:latest			|| :
-	docker pull $DOCKER_REPO/scorify-worker-score:latest 	|| :
-	docker pull $DOCKER_REPO/scorify-worker-fft:latest 	|| :
-	docker pull $DOCKER_REPO/scorify-worker-peak:latest 	|| :
-	docker pull $DOCKER_REPO/scorify-worker-score:latest 	|| :
+	docker pull $(DOCKER_REPO)/scorify-web:latest			|| :
+	docker pull $(DOCKER_REPO)/scorify-worker-score:latest 	|| :
+	docker pull $(DOCKER_REPO)/scorify-worker-fft:latest 	|| :
+	docker pull $(DOCKER_REPO)/scorify-worker-peak:latest 	|| :
+	docker pull $(DOCKER_REPO)/scorify-worker-score:latest 	|| :
 
 build-web:
 	docker-compose -f docker-files/compose.yml build web

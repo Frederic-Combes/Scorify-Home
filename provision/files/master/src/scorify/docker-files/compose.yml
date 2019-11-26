@@ -44,6 +44,18 @@ services:
     depends_on:
       - "redis"
 
+  worker-fft-2:
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-worker-fft"
+    image: "scorify-worker-fft:latest"
+    volumes:
+      - "data:/data"
+    networks:
+      - "scorify"
+    depends_on:
+      - "redis"
+
   worker-peak:
     build:
       context: ..
