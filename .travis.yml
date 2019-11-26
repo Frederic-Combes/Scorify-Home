@@ -3,7 +3,7 @@ language: python
 services: docker
 
 before_script:
-  - cd provision/files/master/src/scorify*
+  - cd provision/files/master/src/scorify
   - make pull
 
 script:
