@@ -1,17 +1,36 @@
+# FROM python:3.6-slim
+
+# RUN pip install pipenv
+# RUN mkdir -p /usr/src/scorify/worker-fft  /usr/src/scorify/utils
+
+# COPY worker-fft/Pipfile* /usr/src/scorify/worker-fft/
+
+# WORKDIR /usr/src/scorify/worker-fft
+# ENV PIP_NO_CACHE_DIR=false
+# RUN pipenv install
+
+# COPY ./*.py /usr/src/scorify/
+# COPY ./worker-fft /usr/src/scorify/worker-fft/
+# COPY ./utils /usr/src/scorify/utils/
+
+# WORKDIR /usr/src/scorify/worker-fft
+# CMD ["pipenv", "run", "python", "main.py"]
+
 FROM python:3.6-slim
 
-RUN pip install pipenv
 RUN mkdir -p /usr/src/scorify/worker-fft  /usr/src/scorify/utils
-
-COPY worker-fft/Pipfile* /usr/src/scorify/worker-fft/
-
 WORKDIR /usr/src/scorify/worker-fft
-ENV PIP_NO_CACHE_DIR=false
-RUN pipenv install
 
-COPY ./*.py /usr/src/scorify/
-COPY ./worker-fft /usr/src/scorify/worker-fft/
-COPY ./utils /usr/src/scorify/utils/
+COPY worker-fft/Pipfile* ./
 
-WORKDIR /usr/src/scorify/worker-fft
-CMD ["pipenv", "run", "python", "main.py"]
+RUN pip install pipenv && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
+  pipenv install --skip-lock && \
+  apt-get remove -y gcc python3-dev libssl-dev && \
+  apt-get autoremove -y && \
+  pip uninstall pipenv -y
+
+COPY ./*.py ../
+COPY ./worker-fft ./
+COPY ./utils ../utils/
