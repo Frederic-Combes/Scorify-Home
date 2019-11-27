@@ -49,3 +49,6 @@ run-all:
 
 run-web:
 	docker-compose -f docker-files/compose.yml up -d web
+
+run-worker-split:
+	docker-compose -f docker-files/compose.yml up -d worker-split

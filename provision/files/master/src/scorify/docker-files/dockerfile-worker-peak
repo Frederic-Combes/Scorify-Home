@@ -34,3 +34,5 @@ RUN pip install pipenv && \
 COPY ./*.py ../
 COPY ./worker-peak ./
 COPY ./utils ../utils/
+
+CMD ["python3", "main.py"]

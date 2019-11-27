@@ -7,10 +7,10 @@ services:
       - "scorify"
 
   web:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-web"
-    image: "scorify-web:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-web"
+    image: "fredericcombes/corify-web:latest"
     ports:
       - "5000:5000"
     volumes:
@@ -21,10 +21,10 @@ services:
       - "redis"
 
   worker-split:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-worker-split"
-    image: "scorify-worker-split:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-worker-split"
+    image: "fredericcombes/scorify-worker-split:latest"
     volumes:
       - "data:/data"
     networks:
@@ -33,10 +33,10 @@ services:
       - "redis"
 
   worker-fft:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-worker-fft"
-    image: "scorify-worker-fft:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-worker-fft"
+    image: "fredericcombes/scorify-worker-fft:latest"
     volumes:
       - "data:/data"
     networks:
@@ -45,10 +45,10 @@ services:
       - "redis"
 
   worker-fft-2:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-worker-fft"
-    image: "scorify-worker-fft:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-worker-fft"
+    image: "fredericcombes/scorify-worker-fft:latest"
     volumes:
       - "data:/data"
     networks:
@@ -57,10 +57,10 @@ services:
       - "redis"
 
   worker-peak:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-worker-peak"
-    image: "scorify-worker-peak:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-worker-peak"
+    image: "fredericcombes/scorify-worker-peak:latest"
     volumes:
       - "data:/data"
     networks:
@@ -69,10 +69,10 @@ services:
       - "redis"
 
   worker-score:
-    build:
-      context: ..
-      dockerfile: "docker-files/dockerfile-worker-score"
-    image: "scorify-worker-score:latest"
+    # build:
+    #   context: ..
+    #   dockerfile: "docker-files/dockerfile-worker-score"
+    image: "fredericcombes/scorify-worker-score:latest"
     volumes:
       - "data:/data"
     networks:
