@@ -25,7 +25,7 @@ pull:
 	docker pull $(DOCKER_REPO)/scorify-worker-score:latest 	|| :
 
 build-web:
-	docker build -f docker-files/docker-web -t scorify-web:latest .
+	docker build -f docker-files/dockerfile-web -t scorify-web:latest .
 
 build-worker-split:
 	docker-compose -f docker-files/compose.yml build worker-split
