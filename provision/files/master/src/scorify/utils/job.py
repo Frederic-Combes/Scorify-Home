@@ -1,31 +1,13 @@
 import uuid
 from datetime import datetime
 import json
-from types import SimpleNamespace
 
 from utils.db import MySQLDatabaseCursor
+from utils.constant import JOB_STATUS
 
-TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
-
-# Constant Strings related to job status
-JOB_STATUS = SimpleNamespace()
-
-JOB_STATUS.CREATED = 'created'
-JOB_STATUS.STARTED = 'started'
-JOB_STATUS.COMPLETED = 'completed'
-JOB_STATUS.NOTIFY = 'notify'
+_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
-# TODO: there should be a constant.py that contains all the string litteral with meaningful
-#   names be at some point it's messy and annoying and inneficient to change a string
-#   litteral in many different places...
-# TODO: when creating a job, one should check the database to see if the job doesn't already exists...
-#   and they either delete the entry from the database and create it anew or
-#   use the job from the database, but in that case the full job data should be
-#   saved in the database (new column data VARCHAR that contains a json dump?)
-# TODO: what do we do if the database crashes / doesn't answer?
-# TODO: Job.get should raise an error if the field name is invalid (cause then,
-#   it would be easier to debug typo in fields name!
 class Job:
     def __init__(self, **kwargs):
         if 'hash' in kwargs and 'name' in kwargs:
@@ -46,8 +28,8 @@ class Job:
             'uid': str(uuid.uuid4()),
             'order': order,
             'status': JOB_STATUS.CREATED,
-            'creation_time': datetime.now().strftime(TIMESTAMP_FORMAT),
-            'update_time': datetime.now().strftime(TIMESTAMP_FORMAT),
+            'creation_time': datetime.now().strftime(_TIMESTAMP_FORMAT),
+            'update_time': datetime.now().strftime(_TIMESTAMP_FORMAT),
         }
         self.data = {}
 
@@ -92,14 +74,12 @@ class Job:
             self._job['status'] = JOB_STATUS.STARTED
             self.__updateDatabaseValue_status(cursor)
 
-            self._job['update_time'] = datetime.now().strftime(TIMESTAMP_FORMAT)
+            self._job['update_time'] = datetime.now().strftime(_TIMESTAMP_FORMAT)
             self.__updateDatabaseValue_update_time(cursor)
 
             self._job['total'] = total
             self._job['progress'] = 0
             self.__updateDatabaseValue_progress_total(cursor)
-
-            # TODO: assert 0 <= total
 
     def update(self, progress, total=None):
         """ Updates the job progress value and updates the database
@@ -115,17 +95,17 @@ class Job:
                 self._job['status'] = JOB_STATUS.STARTED
                 self.__updateDatabaseValue_status(cursor)
 
-            self._job['update_time'] = datetime.now().strftime(TIMESTAMP_FORMAT)
+            self._job['update_time'] = datetime.now().strftime(_TIMESTAMP_FORMAT)
             self.__updateDatabaseValue_update_time(cursor)
 
             self._job['total'] = total
             self._job['progress'] = progress
             self.__updateDatabaseValue_progress_total(cursor)
 
-            # TODO: assert 0 <= progress <= total
-
     def notify(self, data=None):
-        """ Creates a notify job (a copy of a job whose status cannor be changed) """
+        """ Creates a notify job (a copy of a job whose status cannot be changed
+            and which is not insterted into the database)
+        """
         return NotifyJob(self, data)
 
     def complete(self):
@@ -136,7 +116,7 @@ class Job:
             self._job['status'] = JOB_STATUS.COMPLETED
             self.__updateDatabaseValue_status(cursor)
 
-            self._job['update_time'] = datetime.now().strftime(TIMESTAMP_FORMAT)
+            self._job['update_time'] = datetime.now().strftime(_TIMESTAMP_FORMAT)
             self.__updateDatabaseValue_update_time(cursor)
 
             self._job['progress'] = self._job['total']
@@ -152,7 +132,7 @@ class Job:
     def get(self, field):
         """ Returns the value associated to the field field, or None if the
             field is not present. Guaranteed fields are:
-                - uid [UID STRING], name [STRING], status[STRING],
+                - uid [UID STRING], name [STRING], status [STRING],
                     creation_time [TIMESTAMP STRING], update_time [TIMESTAMP STRING],
                     (data [JSON DICT])
             Possible fields are:

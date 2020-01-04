@@ -4,6 +4,7 @@ import math
 
 from utils import redis, filepath
 from utils.job import Job
+from utils.constant import REDIS_PUBLISH_UPDATE, REDIS_PUBLISH_JOB, REDIS_QUEUE_JOB
 
 
 def GetSegments(sampleFrequency, sampleCount):
@@ -94,7 +95,7 @@ def SplitFile(job):
             data['segment-hash'] = hash
             data['segment-index'] = segmentDone
 
-            redis.open().publish('JOB-UPDATE-SPLIT', job.notify(data).serialize())
+            redis.open().publish(REDIS_PUBLISH_UPDATE.SPLIT, job.notify(data).serialize())
 
             segmentDone = segmentDone + 1
 
@@ -103,7 +104,7 @@ def SplitFile(job):
         print('[split] Spliting... ', segmentDone, '/', len(segments), 'done.')
 
         job.complete()
-        redis.open().publish('JOB-UPDATE-SPLIT', job.serialize())
+        redis.open().publish(REDIS_PUBLISH_UPDATE.SPLIT, job.serialize())
 
         print('[split] [SUCCESS] Job', rawFileHash, flush=True)
 
@@ -111,9 +112,9 @@ def SplitFile(job):
 def Dispatcher(message):
     print('[split] Dispatching message:', message['channel'], message['data'])
 
-    if message['channel'] == b'JOB-QUEUE-UPDATE-SPLIT':
+    if message['channel'].decode('UTF-8') == REDIS_PUBLISH_JOB.SPLIT:
         ProcessQueue()
-    elif message['channel'] == b'WORKER-STOP':
+    elif message['channel'].decode('UTF-8') == 'WORKER-STOP':
         Stop()
     else:
         print('[worker-split]: Recieved a message that was not handled', message['channel'], message['data'])
@@ -125,7 +126,7 @@ redisSubscribeThread = None
 
 def ProcessQueue():
     while True:
-        serializedJob = redis.open().lpop('JOB-QUEUE-SPLIT')
+        serializedJob = redis.open().lpop(REDIS_QUEUE_JOB.SPLIT)
 
         if serializedJob:
             print('[split] Recieved job:', serializedJob.decode('UTF-8'), flush=True)
@@ -144,7 +145,7 @@ def Stop():
 if __name__ == '__main__':
     print('[split] Starting...')
     redisSubscribe = redis.open().pubsub()
-    redisSubscribe.subscribe(**{'JOB-QUEUE-UPDATE-SPLIT': Dispatcher})
+    redisSubscribe.subscribe(**{REDIS_PUBLISH_JOB.SPLIT: Dispatcher})
     redisSubscribe.subscribe(**{'WORKER-STOP': Dispatcher})
     redisSubscribeThread = redisSubscribe.run_in_thread(sleep_time=0.5)
     print('[split] Suscribed to redis.')

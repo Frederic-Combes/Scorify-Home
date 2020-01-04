@@ -1,17 +1,16 @@
-from utils import redis
-from utils.job import Job, JOB_STATUS
+from utils.redis import RedisModelBase
+from utils.job import Job
+from utils.constant import JOB_STATUS, REDIS_QUEUE_JOB, REDIS_PUBLISH_JOB, REDIS_PUBLISH_UPDATE
 
-TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-
-class RedisModel(redis.RedisModelBase):
+class RedisModel(RedisModelBase):
     # Init #####################################################################
     def __init__(self):
         super(RedisModel, self).__init__()
         self._message_handlers = {
-            'JOB-UPDATE-SPLIT': self.__onMessage_jobUpdateSplit,
-            'JOB-UPDATE-FFT': self.__onMessage_jobUpdateFft,
-            'JOB-UPDATE-PEAK': self.__onMessage_jobUpdatePeak,
+            REDIS_PUBLISH_UPDATE.SPLIT: self.__onMessage_jobUpdateSplit,
+            REDIS_PUBLISH_UPDATE.FFT: self.__onMessage_jobUpdateFft,
+            REDIS_PUBLISH_UPDATE.PEAK: self.__onMessage_jobUpdatePeak,
             'WORKER-STOP': self.__onMessage_workerStop
         }
 
@@ -38,8 +37,8 @@ class RedisModel(redis.RedisModelBase):
             newJob.data['segment-hash'] = job.data['segment-hash']
             newJob.data['segment-index'] = job.data['segment-index']
 
-            self.rpush('JOB-QUEUE-FFT', newJob.serialize())
-            self.publish('JOB-QUEUE-UPDATE-FFT', '')
+            self.rpush(REDIS_QUEUE_JOB.FFT, newJob.serialize())
+            self.publish(REDIS_PUBLISH_JOB.FFT, '')
 
         if job.status() == JOB_STATUS.COMPLETED:
             pass
@@ -59,8 +58,8 @@ class RedisModel(redis.RedisModelBase):
             newJob.data['segment-index'] = job.data['segment-index']
             newJob.data['fft-hash'] = job.data['fft-hash']
 
-            self.rpush('JOB-QUEUE-PEAK', newJob.serialize())
-            self.publish('JOB-QUEUE-UPDATE-PEAK', '')
+            self.rpush(REDIS_QUEUE_JOB.PEAK, newJob.serialize())
+            self.publish(REDIS_PUBLISH_JOB.PEAK, '')
 
     def __onMessage_jobUpdatePeak(self, job):
         if job.status() == JOB_STATUS.STARTED:

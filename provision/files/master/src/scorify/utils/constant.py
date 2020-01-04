@@ -1,0 +1,30 @@
+from types import SimpleNamespace
+
+# Constant Strings related to job status
+JOB_STATUS = SimpleNamespace()
+
+JOB_STATUS.CREATED = 'created'
+JOB_STATUS.STARTED = 'started'
+JOB_STATUS.COMPLETED = 'completed'
+JOB_STATUS.NOTIFY = 'notify'
+
+# Constants related to Redis
+
+# Used when (r)pushing a job a in a queue
+REDIS_QUEUE_JOB = SimpleNamespace()
+REDIS_QUEUE_JOB.SPLIT = 'JOB-QUEUE-SPLIT'
+REDIS_QUEUE_JOB.FFT = 'JOB-QUEUE-FFT'
+REDIS_QUEUE_JOB.PEAK = 'JOB-QUEUE-PEAK'
+REDIS_QUEUE_JOB.SPLIT = 'JOB-QUEUE-SCORE'
+# Used to notify that a job queue has changed
+REDIS_PUBLISH_JOB = SimpleNamespace()
+REDIS_PUBLISH_JOB.SPLIT = 'JOB-QUEUE-UPDATE-SPLIT'
+REDIS_PUBLISH_JOB.FFT = 'JOB-QUEUE-UPDATE-FFT'
+REDIS_PUBLISH_JOB.PEAK = 'JOB-QUEUE-UPDATE-PEAK'
+REDIS_PUBLISH_JOB.SCORE = 'JOB-QUEUE-UPDATE-SCORE'
+# Used to publish an updated job (status, progress, notification)
+REDIS_PUBLISH_UPDATE = SimpleNamespace()
+REDIS_PUBLISH_UPDATE.SPLIT = 'JOB-UPDATE-SPLIT'
+REDIS_PUBLISH_UPDATE.FFT = 'JOB-UPDATE-FFT'
+REDIS_PUBLISH_UPDATE.PEAK = 'JOB-UPDATE-PEAK'
+REDIS_PUBLISH_UPDATE.SCORE = 'JOB-UPDATE-SCORE'

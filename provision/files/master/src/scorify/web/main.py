@@ -1,32 +1,7 @@
-""" Scorify WebbApp : main """
+""" Scorify WebApp : main """
 import os
 
-# TODO: Capture some SIGINT: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
-# TODO: Use Python 3.7 in all docker images (REQUIRES FIBER OPTICS CONNECTION)
 # TODO: Turn all line endings to LF (linux) (REQUIRES FIBER OPTICS CONNECTION)
-# TODO: Make a real TODO list
-# FIXME: Missing exception names in RedisModelBase
-# FIXME: Strong dependence on Mariadb container (at the moment, nothing
-#   can be done if the DB is not responding...)
-# TODO: Fix the DB initialization: databases, tables, ... should be checked
-#   upon starting the MariaDB container
-# TODO: Check/Show the spectrogramm computed by the FFT worker to make sure we
-#   are doing it right
-# TODO: When creating a job, check if the job has already been done in the past
-#   (it should be marked as completed in the database)
-# TODO: Watchdog to restart jobs that failed (status is started, but last update
-#   is older than xxx seconds or minutes)
-# TODO: Move all constant strings in a constant.py file
-# FIXME: concurent upload of file cause overwriting (use a NamedTemporaryFile?)
-# TODO: Support for other audio format type (new worker)
-# TODO: Create the Job chain as early as possible (fft, peak, score jobs should
-#   be created at the same time as we know they will have to happen.)
-# TODO: Rewrite the worker using RedisModelBase
-# FIXME: worker-score isn't using Job from utils.job
-# TODO: Harmonize some names (Job from utils.job uses 'hash', while worker call
-#   call it rawFileHash while other places have it with a different name)
-# TODO: Makefile rules are sort of useless since most of the time I manually
-#   type the docker-compose up command
 
 # Libs/Modules
 #   > NFS Server: https://hub.docker.com/r/erichough/nfs-server
@@ -89,6 +64,8 @@ import os
 from utils import filepath, db
 from utils.db import MySQLDatabaseCursor
 from utils.job import Job
+from utils.constant import REDIS_PUBLISH_JOB, REDIS_QUEUE_JOB, REDIS_PUBLISH_UPDATE
+
 from job import RedisModel
 
 # Flask App ####################################################################
@@ -136,7 +113,6 @@ def upload_file():
 
         if file and isFileAllowed(file.filename):                               # File has the correct extension
             # Temporarily saving the file
-            # TODO: Give a unique name to the temporary file
             filepath.EnsureExists('/data/temp-hash/raw')
             file.save('/data/temp-hash/raw')
 
@@ -152,8 +128,8 @@ def upload_file():
 
             job = Job.new(hash, 'split')
 
-            redisModel.rpush('JOB-QUEUE-SPLIT', job.serialize())
-            redisModel.publish('JOB-QUEUE-UPDATE-SPLIT', '')
+            redisModel.rpush(REDIS_QUEUE_JOB.SPLIT, job.serialize())
+            redisModel.publish(REDIS_PUBLISH_JOB.SPLIT, '')
 
             print('[web] Job created. File is being processed.')
 
@@ -223,7 +199,7 @@ if __name__ == '__main__':
     db.ensureInitialized()
 
     print('[web] Checking Redis...')
-    redisModel.start('JOB-UPDATE-SPLIT', 'JOB-UPDATE-FFT', 'JOB-UPDATE-PEAK', 'WORKER-STOP')
+    redisModel.start(REDIS_PUBLISH_UPDATE.SPLIT, REDIS_PUBLISH_UPDATE.FFT, REDIS_PUBLISH_UPDATE.PEAK, 'WORKER-STOP')
 
     # import logging
     # logging.basicConfig(filename='error.log', level=logging.DEBUG)

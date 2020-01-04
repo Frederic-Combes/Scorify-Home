@@ -23,22 +23,12 @@ def open():
             redisConnection = redis.Redis(**redisConfig)
             redisIsConnected = True
             return redisConnection
-        except:
+        except redis.ConnectionError:
             print("Failed to connect to Redis")
 
 
 def close():
     return
-
-
-def test():
-    redis = open()
-
-    redis.set('TEST-MESSAGE', 'This is a test')
-    print('[redis] Test message sent:', 'This is a test')
-    print('[redis] Test message recieved:', redis.get('TEST-MESSAGE'))
-
-    return True
 
 
 class RedisModelBase():
@@ -112,22 +102,30 @@ class RedisModelBase():
 
     def __waitBeforeReconnecting(self):
         """ In case the last connection to Redis failed, imposes a waiting time """
-        if self._failedConnections > 3:
-            print(self._debugHeader, 'Failed to connected to redis. Attempting again in a minute...')
+        if self._failedConnections == 0:
+            return
+        elif self._failedConnections > 3:
+            print(self._debugHeader, 'Attempting to connect again in a minute...', flush=True)
             time.sleep(60)
-        elif self._failedConnections > 0:
-            print(self._debugHeader, 'Failed to connected to redis. Attempting again in a 5 seconds...')
+        else:
+            print(self._debugHeader, 'Attempting again in 5 seconds...', flush=True)
             time.sleep(5)
 
     def __dispatchMessages(self):
         """ Dispatches messages current hold in Redis """
         try:
             message = self._pubsub.get_message()
-            if message:
-                self.__dispatch(message)
-            self._failedConnections = 0
-        except:
+        except redis.ConnectionError:
+            print(self._debugHeader, 'unexpected ConnectionError occured.', flush=True)
             self._failedConnections = self._failedConnections + 1
+        except redis.RedisError as err:
+            print(self._debugHeader, 'unexpected RedisError occured.', flush=True)
+            raise err
+        else:
+            self._failedConnections = 0
+
+        if message:
+            self.__dispatch(message)
 
         self.__waitBeforeReconnecting()
 
@@ -151,10 +149,12 @@ class RedisModelBase():
 
                     try:
                         self._queues[queue]['func'](self._connection, message['channel'], message['message'])
-                        self._failedConnections = 0
-                    except:
+                    except redis.ConnectionError:
+                        print(self._debugHeader, 'unexpected ConnectionError occured.', flush=True)
                         self._failedConnections = self._failedConnections + 1
                         break
+                    else:
+                        self._failedConnections = 0
 
                     self._queues[queue]['queue'].pop(0)
 
