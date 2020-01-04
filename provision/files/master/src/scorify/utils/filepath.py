@@ -2,11 +2,11 @@ import os
 
 DATA_FOLDER = '/data'
 
+
 def Hash(filename):
     """ Returns a hash that uniquely indentify a file
             > file: file opened in 'rb' mode
     """
-    import sys as system
     import hashlib
 
     with open(filename, 'rb') as file:

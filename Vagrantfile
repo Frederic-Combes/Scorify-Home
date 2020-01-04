@@ -13,14 +13,14 @@ Vagrant.configure("2") do |config|
   config.vm.define 'master' do |machine|
     machine.vm.provider "virtualbox" do |vb|
       vb.gui = false                                                            # No GUI
-      vb.memory = "4096"                                                        # Give some RAM
-      vb.cpus = 1                                                               # Give some CPU
+      vb.memory = "8192"                                                        # Give some RAM
+      vb.cpus = 8                                                               # Give some CPU
     end
 
     machine.vm.hostname = "master"
     machine.vm.network "private_network", ip: "192.168.50.200"
 
-    machine.vm.network "forwarded_port", guest: 80, host: 80                    # HTTP
+    machine.vm.network "forwarded_port", guest: 80, host: 80                    # HTTP - NOTE: Shouldn't use as it requires admin rights
     machine.vm.network "forwarded_port", guest: 5000, host: 5000                # Future Use
     machine.vm.network "forwarded_port", guest: 8080, host: 8080                # Future Use
 

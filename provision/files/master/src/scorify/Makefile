@@ -25,7 +25,7 @@ pull:
 	docker pull $(DOCKER_REPO)/scorify-worker-score:latest 	|| :
 
 build-web:
-	docker build -f docker-files/dockerfile-web -t scorify-web:latest .
+	docker-compose -f docker-files/compose.yml build web
 
 build-worker-split:
 	docker-compose -f docker-files/compose.yml build worker-split
@@ -39,10 +39,13 @@ build-worker-peak:
 build-worker-score:
 	docker-compose -f docker-files/compose.yml build worker-score
 
-run: run-redis
+run: run-redis run-mariadb
 
 run-redis:
 	docker-compose -f docker-files/compose.yml up -d redis
+
+run-mariadb:
+	docker-compose -f docker-files/compose.yml up -d mariadb
 
 run-all:
 	docker-compose -f docker-files/compose.yml up -d

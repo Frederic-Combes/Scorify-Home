@@ -1,16 +1,11 @@
 import os
 
-from tempfile import NamedTemporaryFile
-
-import math
 import numpy as np
 
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
 
-from random import randint
+from utils import redis, filepath
 
-from utils import redis, db, filepath
 
 def Score(hash):
     print('[score] Starting job...')
@@ -24,10 +19,10 @@ def Score(hash):
 
     for peakHash in filepaths:
         with open(filepath.GetPeakFromHash(hash, peakHash), 'rb') as content:
-            headerData  = np.frombuffer(content.read(4*4), dtype=np.int32)
+            headerData = np.frombuffer(content.read(4*4), dtype=np.int32)
             print('[score] Header data:', headerData)
-            data        = np.frombuffer(content.read(), dtype=np.float_)
-            peaks       = np.append(peaks, data)
+            data = np.frombuffer(content.read(), dtype=np.float_)
+            peaks = np.append(peaks, data)
 
     average = np.average(peaks)
     print('[score] Average is:', average)
@@ -52,7 +47,6 @@ def Score(hash):
 
 def Parse(job):
     tokens = job.split('-')
-    rawFileHash = tokens[0]
 
     if len(tokens) != 1:
         print('[score] Recieved invalid job:', job)
@@ -81,8 +75,9 @@ def ProcessQueue():
             break
 
 
-redisSubscribe          = None
-redisSubscribeThread    = None
+redisSubscribe = None
+redisSubscribeThread = None
+
 
 def Stop():
     global redisSubscribe, redisSubscribeThread

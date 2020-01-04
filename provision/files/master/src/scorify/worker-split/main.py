@@ -1,10 +1,10 @@
-import os
-
 import wave
 import hashlib
 import math
 
-from utils import redis, db, filepath
+from utils import redis, filepath
+from utils.job import Job
+
 
 def GetSegments(sampleFrequency, sampleCount):
     """ Returns the list of [startPosition, length] that will correspond to the
@@ -23,9 +23,8 @@ def GetSegments(sampleFrequency, sampleCount):
     # which leads to
     #     m = ceil(n * sampleFrequency * fftSampleFrenquency)
 
-
-    fftBatchSize        = 500                                                   # Number of FFT samples to take per segment
-    fftSampleLength     = 1 * sampleFrequency                                   # Length of the FFT samples
+    fftBatchSize = 500                                                   # Number of FFT samples to take per segment
+    fftSampleLength = 1 * sampleFrequency                                   # Length of the FFT samples
     fftSampleFrenquency = 20                                                    # Frequency of the FFT sampling
 
     segments = []
@@ -53,24 +52,26 @@ def GetSegments(sampleFrequency, sampleCount):
     return segments
 
 
-def SplitFile(rawFileHash):
+def SplitFile(job):
     """ Splits the input file in segments, and store their hash in the DB
-            > rawFileHash: hash of the raw file we are working on
-            Returns: True once completed
-            Notify: yes
+        > rawFileHash: hash of the raw file we are working on
+
+        Returns: True once completed
+        Notify: yes
     """
+    rawFileHash = job.get('hash')
+
     print('[split] Opening ', filepath.GetRawFromHash(rawFileHash))
 
     with wave.open(filepath.GetRawFromHash(rawFileHash), 'rb') as content:
         segments = GetSegments(content.getframerate(), content.getnframes())
 
         print('[split] File should be split in', len(segments), 'segments')
-        # database, cursor = db.open()
 
         segmentDone = 0
         segmentCount = len(segments)
 
-        redis.open().publish('JOB-UPDATE-SPLIT', rawFileHash + '-STARTED-' + str(segmentCount))
+        job.start(segmentCount)
 
         for segmentInfo in segments:
             start, length = segmentInfo[0], segmentInfo[1]
@@ -89,40 +90,49 @@ def SplitFile(rawFileHash):
                 segment.setnframes(length)
                 segment.writeframes(data)
 
+            data = {}
+            data['segment-hash'] = hash
+            data['segment-index'] = segmentDone
+
+            redis.open().publish('JOB-UPDATE-SPLIT', job.notify(data).serialize())
+
             segmentDone = segmentDone + 1
-            redis.open().publish('JOB-UPDATE-SPLIT', rawFileHash + '-UPDATE-' + hash + '-' + str(segmentDone) + '-' + str(segmentCount))
-            # cursor.execute("INSERT INTO segments VALUES (%s, %s, %s, %s)", (rawFileHash, hash, start, length))
+
+            job.update(segmentDone)
 
         print('[split] Spliting... ', segmentDone, '/', len(segments), 'done.')
-        redis.open().publish('JOB-UPDATE-SPLIT', rawFileHash + '-SUCCESS')
-        print('[split] [SUCCESS] Job', rawFileHash)
-        # database.commit()
-        # db.close()
 
-def Parse(job):
-    return job
+        job.complete()
+        redis.open().publish('JOB-UPDATE-SPLIT', job.serialize())
+
+        print('[split] [SUCCESS] Job', rawFileHash, flush=True)
 
 
 def Dispatcher(message):
     print('[split] Dispatching message:', message['channel'], message['data'])
 
     if message['channel'] == b'JOB-QUEUE-UPDATE-SPLIT':
-        while True:
-            job = redis.open().lpop('JOB-QUEUE-SPLIT')
-
-            if job:
-                print('[split] Recieved job:', job.decode('UTF-8'))
-                SplitFile(Parse(job.decode('UTF-8')))
-            else:
-                break
+        ProcessQueue()
     elif message['channel'] == b'WORKER-STOP':
         Stop()
     else:
         print('[worker-split]: Recieved a message that was not handled', message['channel'], message['data'])
 
 
-redisSubscribe          = None
-redisSubscribeThread    = None
+redisSubscribe = None
+redisSubscribeThread = None
+
+
+def ProcessQueue():
+    while True:
+        serializedJob = redis.open().lpop('JOB-QUEUE-SPLIT')
+
+        if serializedJob:
+            print('[split] Recieved job:', serializedJob.decode('UTF-8'), flush=True)
+            SplitFile(Job.fromSerialized(serializedJob.decode('UTF-8')))
+        else:
+            break
+
 
 def Stop():
     global redisSubscribe, redisSubscribeThread
@@ -138,4 +148,8 @@ if __name__ == '__main__':
     redisSubscribe.subscribe(**{'WORKER-STOP': Dispatcher})
     redisSubscribeThread = redisSubscribe.run_in_thread(sleep_time=0.5)
     print('[split] Suscribed to redis.')
+
+    print('[split] Processing any jobs already in the queue.')
+    ProcessQueue()
+
     print('[split] Waiting on jobs...')

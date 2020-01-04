@@ -1,40 +1,51 @@
-// Makes the page dynamic
+// Hello World message
+function callMyFunction() {
+  console.log("This is working")
+}
+
+// TODO: in socket.on("update") turn the prefix (used in updateProgress) into
+//  the "name" property
+// TODO: replace updateSplit with updateProgress somehow
 
 var socket = io();
 
-// socket.on("connect", function(){
-//   console.log("Subscribing...")
-//   socket.emit("subscribe-to-hash", "{{ hash }}")
-//
-//   var intervalID = setInterval(function() {
-//     socket.emit('request-update', "{{ hash }}")
-//   }, 250)
-// })
-//
-// socket.on("disconnect", function(msg){
-//   console.log("On disconnect: " + msg)
-//
-//   if(intervalID) {
-//     clearInterval(intervalID)
-//     intervalID = null
-//   }
-// })
+socket.on("server-answer", function(message) {})
 
-socket.on("server-answer", function(message) {
-  // Debugging purpose only
-  // console.log(message)
+socket.on("update", function(json){
+  if(json["name"] == "split") {
+    return updateSplit(json)
+  }
+
+  if(json["name"] == "fft") {
+    return updateProgress(json, "fft-")
+  }
+
+  if(json["name"] == "peak") {
+    return updateProgress(json, "peak-")
+  }
+
+  if(json["name"] == "score") {
+    return updateProgress(json, "score-")
+  }
 })
 
-socket.on("update-split", function(json) {
+function updateSplit(json) {
   frame = document.getElementById("split")
   text  = document.getElementById("split-percent")
   bar   = document.getElementById("split-bar")
 
-  var progress 	= json['progress']
-  var total			= json['total']
+  if(json["count"] == 0) {
+    text.innerHTML = "Gathering informations..."
+    bar.setAttribute("style", "width: 0%")
+
+    return
+  }
+
+  var progress  = json["data"][0]["progress"]
+  var total     = json["data"][0]["total"]
 
   if(progress == 0 && total == 0) {
-    text.innerHTML = "Awaiting worker"
+    text.innerHTML = "Awaiting worker..."
     bar.setAttribute("style", "width: 0%")
   } else if(progress == total) {
     text.innerHTML = "File split in " + total.toString() + " segments"
@@ -43,128 +54,71 @@ socket.on("update-split", function(json) {
     text.innerHTML = "In progress: " + progress.toString() + " out of " + total.toString()
     bar.setAttribute("style", "width: " + (100*progress/total).toFixed(0) + "%")
   }
-})
+}
 
-socket.on("update-fft", function(json) {
-  if(Object.keys(json).length > 0) {
-    frame = document.getElementById("fft-wait")
+// Shows or hide the the progress bar displaying "Gathering informations..."
+//  in accordance to the worker job status
+function showOrHideWaitbar(json, prefix) {
+  bar = document.getElementById(prefix + "wait")
 
-    if(frame) {
-        frame.style.display = "none"
-    }
+  if(json["count"] == 0) {
+    bar.style.display = "block"
+  } else {
+    bar.style.display = "none"
+  }
+}
+
+// Returns (create if necessary) the progress bar for the worker job status
+//  identified by "prefix-order"
+function getOrCreateProgressbar(prefix, order) {
+  frame = document.getElementById(prefix + order.toString())
+
+  if(!frame) {
+    parent = document.getElementById(prefix + "parent")
+    template = document.getElementById(prefix + "template")
+
+    frame = addOrderedChild(parent, template, "order", order)
+
+    frame.id = prefix + order.toString()
+    frame.style.display = "block"
   }
 
-  allComplete = Object.keys(json).length > 0
+  return frame
+}
 
-  Object.keys(json).forEach(function(key) {
-    frame = document.getElementById("fft-" + key)
+// Updates the pogress bar associated to a worker category
+function updateProgress(json, prefix) {
+  showOrHideWaitbar(json, prefix)
 
-    var order			= json[key]['order']
-    var progress 	= json[key]['progress']
-    var total			= json[key]['total']
+  json["data"].forEach(function(data) {
+    var order			= data["order"]
+    var status    = data["status"]
+    var progress 	= data["progress"]
+    var total			= data["total"]
 
-    if(!frame) {
-      parent   = document.getElementById("fft-parent")
-      template = document.getElementById("fft-template")
-      frame    = addOrderedChild(parent, template, "order", order)
-
-      frame.id            = "fft-" + key
-      frame.style.display = "block"
-    }
-
+    frame = getOrCreateProgressbar(prefix, order)
     text  = frame.children[0]
     bar   = frame.children[1]
 
-
-    if(progress == 0 && total == 0) {
+    /* Update the progress bar */
+    if(status == "created") {
       text.innerHTML = order.toString() + ": Awaiting worker"
       bar.setAttribute("style", "width: 0%")
-      allComplete = false
-    } else if(progress == total) {
+    } else if(status == "started") {
+      text.innerHTML = order.toString() + ": " + (100*progress/total).toFixed(1) + "%"
+      bar.setAttribute("style", "width: " + (100*progress/total).toFixed(0) + "%")
+    } else if (status == "completed") {
       text.innerHTML = order.toString() + ": Complete"
       bar.setAttribute("style", "width: 100%")
-    } else {
-      text.innerHTML = order.toString() + ": " + (100*progress/total).toFixed(1) + "%"
-      bar.setAttribute("style", "width: " + (100*progress/total).toFixed(0) + "%")
-      allComplete = false
     }
   })
-
-  if(allComplete) {
-    Object.keys(json).forEach(function(key) {
-      frame               = document.getElementById("fft-" + key)
-      frame.style.display = "none"
-    })
-
-    frame               = document.getElementById("fft-complete")
-    frame.style.display = "block"
-  }
-})
-
-
-socket.on("update-peak", function(json){
-  if(Object.keys(json).length > 0) {
-    frame = document.getElementById("peak-wait")
-
-    if(frame) {
-        frame.style.display = "none"
-    }
-  }
-
-  allComplete = Object.keys(json).length > 0
-
-  Object.keys(json).forEach(function(key) {
-    frame = document.getElementById("peak-" + key)
-
-    var order			= json[key]['order']
-    var progress 	= json[key]['progress']
-    var total			= json[key]['total']
-
-    if (!frame ) {
-      parent   = document.getElementById("peak-parent")
-      template = document.getElementById("peak-template")
-      frame    = addOrderedChild(parent, template, "order", order)
-
-      frame.id            = "peak-" + key
-      frame.style.display = "block"
-    }
-
-    text  = frame.children[0]
-    bar   = frame.children[1]
-
-    if(progress == 0 && total == 0) {
-      text.innerHTML = order.toString() + ": Awaiting worker"
-      bar.setAttribute("style", "width: 0%")
-      allComplete = false
-    } else if(progress == total) {
-      text.innerHTML = order.toString() + ": Complete (" + progress.toString() + " out of " + total.toString() + ")"
-      bar.setAttribute("style", "width: 100%")
-    } else {
-      text.innerHTML = order.toString() + ": " + (100*progress/total).toFixed(1) + "%"
-      bar.setAttribute("style", "width: " + (100*progress/total).toFixed(0) + "%")
-      allComplete = false
-    }
-  })
-
-  if(allComplete) {
-    Object.keys(json).forEach(function(key) {
-      frame               = document.getElementById("peak-" + key)
-      frame.style.display = "none"
-    })
-
-    frame               = document.getElementById("peak-complete")
-    frame.style.display = "block"
-  }
-})
-
-function callMyFunction() {
-  console.log("This is working")
 }
 
 function addOrderedChild(parent, template, orderAttributeName, order) {
   var child = document.createElement(template.nodeName)
 
   child.classList.add(template.classList)
+  // TODO: hardcoded "order" should be orderAttributeName
   child.setAttribute("order", order.toString())
   child.style.display = "block"
   child.innerHTML     = template.innerHTML

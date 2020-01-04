@@ -1,22 +1,4 @@
-# FROM python:3.6-slim
-
-# RUN pip install pipenv
-# RUN mkdir -p /usr/src/scorify/web  /usr/src/scorify/utils
-
-# COPY web/Pipfile* /usr/src/scorify/web/
-
-# WORKDIR /usr/src/scorify/web
-# ENV PIP_NO_CACHE_DIR=false
-# RUN pipenv install
-
-# COPY ./*.py /usr/src/scorify
-# COPY ./web /usr/src/scorify/web/
-# COPY ./utils /usr/src/scorify/utils/
-
-# WORKDIR /usr/src/scorify/web
-# CMD ["pipenv", "run", "python", "main.py"]
-
-FROM python:3.6-slim
+FROM python:3.7-slim
 
 RUN mkdir -p /usr/src/scorify/web  /usr/src/scorify/utils
 WORKDIR /usr/src/scorify/web
@@ -26,7 +8,7 @@ COPY web/Pipfile* ./
 RUN pip install pipenv && \
   apt-get update && \
   apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
-  pipenv install --skip-lock && \
+  pipenv install --deploy --system && \
   apt-get remove -y gcc python3-dev libssl-dev && \
   apt-get autoremove -y && \
   pip uninstall pipenv -y
@@ -34,3 +16,9 @@ RUN pip install pipenv && \
 COPY ./*.py ../
 COPY ./web ./
 COPY ./utils ../utils/
+
+ENV PYTHONPATH /usr/src/scorify
+ENV REDIS_HOST redis
+ENV REDIS_PORT 6379
+
+CMD ["python", "main.py"]

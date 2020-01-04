@@ -1,25 +1,8 @@
-# FROM python:3.6-slim
-
-# RUN pip install pipenv
-# RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
-
-# COPY worker-split/Pipfile* /usr/src/scorify/worker-split/
-
-# WORKDIR /usr/src/scorify/worker-split
-# ENV PIP_NO_CACHE_DIR=false
-# RUN pipenv install
-
-# COPY ./*.py /usr/src/scorify/
-# COPY ./utils /usr/src/scorify/utils/
-# COPY ./worker-split /usr/src/scorify/worker-split/
-
-# WORKDIR /usr/src/scorify/worker-split
-# CMD ["pipenv", "run", "python", "main.py"]
-
-# Attempting a smaller image ###################################################
 FROM python:3.6-slim
 
+RUN pip install pipenv
 RUN mkdir -p /usr/src/scorify/worker-split  /usr/src/scorify/utils
+
 WORKDIR /usr/src/scorify/worker-split
 
 COPY worker-split/Pipfile* ./
@@ -27,7 +10,7 @@ COPY worker-split/Pipfile* ./
 RUN pip install pipenv && \
   apt-get update && \
   apt-get install -y --no-install-recommends gcc python3-dev libssl-dev && \
-  pipenv install --skip-lock && \
+  pipenv install --deploy --system && \
   apt-get remove -y gcc python3-dev libssl-dev && \
   apt-get autoremove -y && \
   pip uninstall pipenv -y
@@ -36,4 +19,8 @@ COPY ./*.py ../
 COPY ./worker-split ./
 COPY ./utils ../utils/
 
-CMD ["python3", "main.py"]
+ENV PYTHONPATH /usr/src/scorify
+ENV REDIS_HOST redis
+ENV REDIS_PORT 6379
+
+CMD ["python", "main.py"]

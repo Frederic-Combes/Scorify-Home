@@ -1,5 +1,4 @@
-*_rsa
-*_rsa.pub
-*.svg
-.vagrant/*
-sound/*
+*_rsa*
+.vagrant
+samples
+.idea

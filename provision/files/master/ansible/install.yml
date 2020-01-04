@@ -10,3 +10,7 @@
         docker_edition: "ce"
         docker_users:
           - vagrant
+    - name: Install mariadb-client
+      apt:
+        name: mariadb-client
+        state: present

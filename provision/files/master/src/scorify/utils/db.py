@@ -1,46 +1,81 @@
 import mysql.connector as sql
+import os
 
-dbConfig = {
-    'user' : 'scorify',
-    'host' : '#',
-    'user' : 'scorify',
-    'passwd' : '#',
-    'db' : 'scorify',
+_DATABASE_CONFIGURATION = {
+    'host': os.environ.get('DATABASE_HOST', 'mariadb'),
+    'port': os.environ.get('DATABASE_PORT', '3306'),
+    'user': os.environ.get('DATABASE_USER', 'scorify'),
+    'passwd': os.environ.get('DATABASE_USER_PASSWORD', 'password@scorify'),
+    'db': os.environ.get('DATABASE_NAME', 'scorify')
 }
 
-connection, isConnected = None, False
+_DATABASE_ROOT_CONFIGURATION = {
+    'host': os.environ.get('DATABASE_HOST', 'mariadb'),
+    'port': os.environ.get('DATABASE_PORT', '3306'),
+    'user': 'root',
+    'passwd': os.environ.get('DATABASE_ROOT_PASSWORD', 'password@root'),
+    'db': os.environ.get('DATABASE_NAME', 'scorify')
+}
 
-def open():
-    ''' Ensures a connection to the DB is open and returns a cursor to excecute
-        queries
-    '''
-    global connection, isConnected
 
-    if isConnected:
-        return connection.cursor()
-    else:
-        try:
-            connection = sql.connect(**dbConfig)
-            isConnected = True
-            return connection, connection.cursor()
-        except:
-            print("Failed to open DB connection")
+class MySQLDatabaseCursor:
+    def __init__(self, commit=True, configuration=_DATABASE_CONFIGURATION, buffered=False):
+        self._commit = commit
+        self._buffered = buffered
+        self._configuration = configuration
 
-def close():
-    ''' Closes the DB connection '''
-    global connection, isConnected
+    def __enter__(self):
+        self._connection = sql.connect(**self._configuration)
+        self._cursor = self._connection.cursor(buffered=self._buffered)
+        return self._cursor
 
-    try:
-        connection.close()
-        isConnected = False
-    except:
-        print("Failed to close DB connection")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._commit:
+            self._connection.commit()
 
-def InitDB():
-    ''' Ensures the database follows the correct schema '''
-    connection, cursor = OpenDB()
-    cursor.execute("DROP TABLE segments;")
-    cursor.excecute("CREATE TABLE segments (rawFileHash VARCHAR(64), segmentHash VARCHAR(64), start INT, lenght INT)")
-    # cursor.excecute("CREATE TABLE fft (rawFileHash VARCHAR(64), segmentHash VARCHAR(64), fftHash VARCHAR(64))")
-    connection.commit()
-    return
+        self._cursor.close()
+        self._connection.close()
+        return
+
+
+def ensureInitialized():
+    print('[db] Ensuring the database is initialized...')
+
+    sqlDirectory = os.path.join(os.path.dirname(__file__), 'sql', 'ensure_initialized')
+
+    databaseName = os.environ.get('DATABASE_NAME', 'scorify')
+
+    with MySQLDatabaseCursor(configuration=_DATABASE_CONFIGURATION, buffered=True) as cursor:
+        print('[db] Successfully connected to the database.')
+
+        # Table job_info
+        with open(os.path.join(sqlDirectory, 'if_table_exists.sql'), 'r') as file:
+            query = file.read()
+        cursor.execute(query.format(databaseName, 'job_info'))
+
+        if len(cursor.fetchall()) == 0:
+            print('[db] Table job_info absent. Creating ...')
+            with open(os.path.join(sqlDirectory, 'create_table_job_info.sql'), 'r') as file:
+                query = file.read()
+            cursor.execute(query)
+            print('[db] Ran query:', cursor.query)
+        else:
+            print('[db] Table job_info already present. Nothing to do.')
+
+        # Table job_status
+        with open(os.path.join(sqlDirectory, 'if_table_exists.sql'), 'r') as file:
+            query = file.read()
+        cursor.execute(query.format(databaseName, 'job_status'))
+
+        if len(cursor.fetchall()) == 0:
+            print('[db] Table job_status absent. Creating...')
+            with open(os.path.join(sqlDirectory, 'create_table_job_status.sql'), 'r') as file:
+                query = file.read()
+            cursor.execute(query)
+            print('[db] Ran query:', cursor.query)
+        else:
+            print('[db] Table job_status already present. Nothing to do.')
+
+    # TODO: Check that the table follows the right schema
+
+    print('[db] Done.')

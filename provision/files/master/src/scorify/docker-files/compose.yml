@@ -1,16 +1,36 @@
 ---
-version: '3'
+version: '3.2'
 services:
   redis:
     image: "redis:latest"
     networks:
       - "scorify"
 
+  mariadb:
+    image: "jbergstroem/mariadb-alpine:latest"
+    volumes:
+      - type: bind
+        source: "./initdb.d"
+        target: "/docker-entrypoint-initdb.d"
+      - type: volume
+        source: db
+        target: "/var/lib/mysql"
+    networks:
+      - "scorify"
+    ports:
+      - "3306:3306"
+    environment:
+      - "SKIP_INNODB=1"
+      - "MYSQL_ROOT_PASSWORD=password@root"
+      - "MYSQL_DATABASE=scorify"
+      - "MYSQL_USER=scorify"
+      - "MYSQL_PASSWORD=password@scorify"
+
   web:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-web"
-    image: "fredericcombes/corify-web:latest"
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-web"
+    # image: "fredericcombes/scorify-web:latest"
     ports:
       - "5000:5000"
     volumes:
@@ -21,10 +41,10 @@ services:
       - "redis"
 
   worker-split:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-worker-split"
-    image: "fredericcombes/scorify-worker-split:latest"
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-worker-split"
+    # image: "fredericcombes/scorify-worker-split:latest"
     volumes:
       - "data:/data"
     networks:
@@ -33,10 +53,10 @@ services:
       - "redis"
 
   worker-fft:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-worker-fft"
-    image: "fredericcombes/scorify-worker-fft:latest"
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-worker-fft"
+    # image: "fredericcombes/scorify-worker-fft:latest"
     volumes:
       - "data:/data"
     networks:
@@ -44,23 +64,23 @@ services:
     depends_on:
       - "redis"
 
-  worker-fft-2:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-worker-fft"
-    image: "fredericcombes/scorify-worker-fft:latest"
-    volumes:
-      - "data:/data"
-    networks:
-      - "scorify"
-    depends_on:
-      - "redis"
+  # worker-fft-2:
+  #   build:
+  #     context: ..
+  #     dockerfile: "docker-files/dockerfile-worker-fft"
+  #   # image: "fredericcombes/scorify-worker-fft:latest"
+  #   volumes:
+  #     - "data:/data"
+  #   networks:
+  #     - "scorify"
+  #   depends_on:
+  #     - "redis"
 
   worker-peak:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-worker-peak"
-    image: "fredericcombes/scorify-worker-peak:latest"
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-worker-peak"
+    # image: "fredericcombes/scorify-worker-peak:latest"
     volumes:
       - "data:/data"
     networks:
@@ -69,10 +89,10 @@ services:
       - "redis"
 
   worker-score:
-    # build:
-    #   context: ..
-    #   dockerfile: "docker-files/dockerfile-worker-score"
-    image: "fredericcombes/scorify-worker-score:latest"
+    build:
+      context: ..
+      dockerfile: "docker-files/dockerfile-worker-score"
+    # image: "fredericcombes/scorify-worker-score:latest"
     volumes:
       - "data:/data"
     networks:
@@ -85,3 +105,4 @@ networks:
 
 volumes:
   data:
+  db:
